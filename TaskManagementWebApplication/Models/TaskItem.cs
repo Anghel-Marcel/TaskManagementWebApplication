@@ -22,12 +22,5 @@ namespace TaskManagementWebApplication.Models
         [Required]
         [StringLength(50)]
         public string Status { get; set; } = "ToDo";
-
-        
-        [Required]
-        public string UserId { get; set; }
-
-        [ForeignKey("UserId")]
-        public virtual Microsoft.AspNetCore.Identity.IdentityUser User { get; set; }
     }
 }
