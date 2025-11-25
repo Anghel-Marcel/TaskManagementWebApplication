@@ -23,7 +23,7 @@ namespace TaskManagementWebApplication.Models
         [StringLength(50)]
         public string Status { get; set; } = "ToDo";
 
-        // FK to Identity user
+        
         [Required]
         public string UserId { get; set; }
 
