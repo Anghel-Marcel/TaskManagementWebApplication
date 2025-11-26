@@ -1,53 +1,147 @@
 ﻿@model IEnumerable<TaskManagementWebApplication.Models.TaskItem>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Task Board";
 }
 
-<h1>Index</h1>
+<style>
+    body {
+        background: linear-gradient(135deg, #89f7fe, #66a6ff);
+        min-height: 100vh;
+    }
 
-<p>
-    <a asp-action="Create">Create New</a>
+    .board-container {
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+        overflow-x: auto;
+    }
+
+    .board-column {
+        background: rgba(255, 255, 255, 0.85);
+        border-radius: 12px;
+        padding: 15px;
+        width: 30%;
+        min-width: 300px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    .column-title {
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.4rem;
+        margin-bottom: 15px;
+    }
+
+    .task-card {
+        background: white;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 12px;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        border-left: 6px solid #007bff;
+        cursor: grab;
+    }
+
+        .task-card.dragging {
+            opacity: 0.5;
+        }
+</style>
+
+<h1 class="text-center text-white mt-2">My Task Board</h1>
+
+<p class="text-center">
+    <a class="btn btn-dark" asp-action="Create">+ Create Task</a>
 </p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DueDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DueDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+
+<div class="board-container">
+
+    
+    <div class="board-column" ondragover="allowDrop(event)" ondrop="dropTask(event, 'ToDo')">
+        <div class="column-title text-primary">TO DO</div>
+
+        @foreach (var task in Model.Where(t => t.Status == "ToDo"))
+        {
+            <div class="task-card" draggable="true" ondragstart="drag(event)" data-id="@task.Id">
+                <h5>@task.Title</h5>
+                <p>@task.Description</p>
+                <p><strong>Due:</strong> @task.DueDate?.ToString("yyyy-MM-dd")</p>
+
+                <div>
+                    <a asp-action="Edit" asp-route-id="@task.Id">Edit</a>
+                    |
+                    <a asp-action="Delete" asp-route-id="@task.Id">Delete</a>
+                </div>
+            </div>
+        }
+    </div>
+
+    
+    <div class="board-column" ondragover="allowDrop(event)" ondrop="dropTask(event, 'InProgress')">
+        <div class="column-title text-warning">IN PROGRESS</div>
+
+        @foreach (var task in Model.Where(t => t.Status == "InProgress"))
+        {
+            <div class="task-card" draggable="true" ondragstart="drag(event)" data-id="@task.Id" style="border-left-color: orange;">
+                <h5>@task.Title</h5>
+                <p>@task.Description</p>
+                <p><strong>Due:</strong> @task.DueDate?.ToString("yyyy-MM-dd")</p>
+
+                <div>
+                    <a asp-action="Edit" asp-route-id="@task.Id">Edit</a>
+                    |
+                    <a asp-action="Delete" asp-route-id="@task.Id">Delete</a>
+                </div>
+            </div>
+        }
+    </div>
+
+  
+    <div class="board-column" ondragover="allowDrop(event)" ondrop="dropTask(event, 'Done')">
+        <div class="column-title text-success">DONE</div>
+
+        @foreach (var task in Model.Where(t => t.Status == "Done"))
+        {
+            <div class="task-card" draggable="true" ondragstart="drag(event)" data-id="@task.Id" style="border-left-color: green;">
+                <h5>@task.Title</h5>
+                <p>@task.Description</p>
+                <p><strong>Done on:</strong> @task.DueDate?.ToString("yyyy-MM-dd")</p>
+
+                <div>
+                    <a asp-action="Edit" asp-route-id="@task.Id">Edit</a>
+                    |
+                    <a asp-action="Delete" asp-route-id="@task.Id">Delete</a>
+                </div>
+            </div>
+        }
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        let draggedTask = null;
+
+        function drag(event) {
+            draggedTask = event.target;
+            event.dataTransfer.setData("text", event.target.dataset.id);
+            draggedTask.classList.add("dragging");
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+       
+        function dropTask(event, newStatus) {
+            event.preventDefault();
+            draggedTask.classList.remove("dragging");
+
+           
+            event.target.closest(".board-column").appendChild(draggedTask);
+
+        
+            console.log("Task " + draggedTask.dataset.id + " moved to " + newStatus);
+        }
+    </script>
 }
-    </tbody>
-</table>

@@ -1,52 +1,67 @@
 ﻿@model TaskManagementWebApplication.Models.TaskItem
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Create Task";
 }
 
-<h1>Create</h1>
+<style>
+    .create-card {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        margin-top: 30px;
+    }
+</style>
 
-<h4>TaskItem</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
+<h1 class="text-center mt-3">Create Task</h1>
+
+<div class="row justify-content-center">
+    <div class="col-md-6 create-card">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
+
+            <div class="mb-3">
+                <label asp-for="Title" class="form-label"></label>
                 <input asp-for="Title" class="form-control" />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
                 <textarea asp-for="Description" class="form-control"></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="DueDate" class="control-label"></label>
+
+            <div class="mb-3">
+                <label asp-for="DueDate" class="form-label"></label>
                 <input asp-for="DueDate" class="form-control" />
                 <span asp-validation-for="DueDate" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Status" class="control-label"></label>
+
+            <div class="mb-3">
+                <label asp-for="Status" class="form-label"></label>
                 <select asp-for="Status" class="form-control">
-                    <option value="ToDo">ToDo</option>
-                    <option value="InProgress">InProgress</option>
+                    <option value="ToDo">To Do</option>
+                    <option value="InProgress">In Progress</option>
                     <option value="Done">Done</option>
                 </select>
                 <span asp-validation-for="Status" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-dark px-4">Create</button>
             </div>
         </form>
+
+        <div class="text-center mt-3">
+            <a asp-action="Index">Back to Board</a>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
