@@ -45,4 +45,11 @@ app.MapControllerRoute(
 app.MapRazorPages()
    .WithStaticAssets();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await TaskManagementWebApplication.Data.DbAdmin 
+        .SeedRolesAndAdminAsync(services);
+}
+
 app.Run();
