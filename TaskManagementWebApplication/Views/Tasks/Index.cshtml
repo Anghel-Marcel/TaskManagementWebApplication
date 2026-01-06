@@ -124,7 +124,7 @@
 
         function drag(event) {
             draggedTask = event.target;
-            event.dataTransfer.setData("text", event.target.dataset.id);
+            event.dataTransfer.setData("text", draggedTask.dataset.id);
             draggedTask.classList.add("dragging");
         }
 
@@ -132,16 +132,28 @@
             event.preventDefault();
         }
 
-       
         function dropTask(event, newStatus) {
             event.preventDefault();
+
+            const column = event.target.closest(".board-column");
+            column.appendChild(draggedTask);
+
             draggedTask.classList.remove("dragging");
 
-           
-            event.target.closest(".board-column").appendChild(draggedTask);
+            
+            if (newStatus === "ToDo") draggedTask.style.borderLeftColor = "#007bff";
+            if (newStatus === "InProgress") draggedTask.style.borderLeftColor = "orange";
+            if (newStatus === "Done") draggedTask.style.borderLeftColor = "green";
 
-        
-            console.log("Task " + draggedTask.dataset.id + " moved to " + newStatus);
+            
+            fetch('/Tasks/UpdateStatus', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `id=${draggedTask.dataset.id}&status=${newStatus}`
+            });
         }
     </script>
 }
+

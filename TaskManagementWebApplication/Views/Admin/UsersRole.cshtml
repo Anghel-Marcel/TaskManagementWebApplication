@@ -1,0 +1,24 @@
+﻿@using Microsoft.AspNetCore.Identity
+@model IEnumerable<(IdentityUser User, IList<string> Roles)>
+
+<h2>User Management</h2>
+
+<table class="table">
+    <tr>
+        <th>Email</th>
+        <th>Roles</th>
+        <th>Actions</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.User.Email</td>
+            <td>@string.Join(", ", item.Roles)</td>
+            <td>
+                <a asp-action="MakeAdmin" asp-route-id="@item.User.Id">Make Admin</a> |
+                <a asp-action="RemoveAdmin" asp-route-id="@item.User.Id">Remove Admin</a>
+            </td>
+        </tr>
+    }
+</table>
