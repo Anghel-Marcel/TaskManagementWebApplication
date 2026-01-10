@@ -1,8 +1,45 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    .hero {
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #89f7fe, #66a6ff);
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        color: white;
+        margin-top: 30px;
+        padding: 40px;
+        text-align: center;
+    }
+
+    .hero h1 {
+        font-size: 3rem;
+        font-weight: 700;
+    }
+
+    .hero p {
+        font-size: 1.2rem;
+        margin-top: 15px;
+        opacity: 0.95;
+    }
+</style>
+
+<div class="hero">
+    <div>
+        <h1>Task Management System</h1>
+        <p>
+            Organize your work efficiently with a simple<br />
+            Kanban-style task board.
+        </p>
+
+        <a asp-controller="Tasks" asp-action="Index"
+           class="btn btn-dark btn-lg mt-4 px-5">
+            Go To Tasks
+        </a>
+    </div>
 </div>
