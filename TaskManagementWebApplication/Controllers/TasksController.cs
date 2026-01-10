@@ -155,5 +155,18 @@ namespace TaskManagementWebApplication.Controllers
         {
             return _context.Tasks.Any(e => e.Id == id);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateStatus(int id, string status)
+        {
+            var task = await _context.Tasks.FindAsync(id);
+            if (task == null) return NotFound();
+
+            task.Status = status;
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
     }
 }
