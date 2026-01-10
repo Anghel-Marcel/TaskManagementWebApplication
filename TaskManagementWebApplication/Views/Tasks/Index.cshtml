@@ -35,17 +35,43 @@
 
     .task-card {
         background: white;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 12px;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-        border-left: 6px solid #007bff;
+        border-radius: 8px;
+        padding: 8px 10px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        border-left: 5px solid #007bff;
         cursor: grab;
+        font-size: 0.9rem;
     }
+
+        .task-card h5 {
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .task-card p {
+            margin-bottom: 4px;
+            font-size: 0.85rem;
+        }
+
 
         .task-card.dragging {
             opacity: 0.5;
         }
+
+        .task-card.todo {
+            border-left-color: #007bff; 
+        }
+
+        .task-card.inprogress {
+            border-left-color: orange;
+        }
+
+        .task-card.done {
+            border-left-color: green !important;
+            background: #e9f9ee;
+        }
+
 </style>
 
 <h1 class="text-center text-white mt-2">My Task Board</h1>
@@ -53,6 +79,14 @@
 <p class="text-center">
     <a class="btn btn-dark" asp-action="Create">+ Create Task</a>
 </p>
+
+<div class="text-center mb-3">
+    <button class="btn btn-outline-dark" onclick="addBoard()">
+        + Add Another Board
+    </button>
+</div>
+
+
 
 <div class="board-container">
 
@@ -62,17 +96,29 @@
 
         @foreach (var task in Model.Where(t => t.Status == "ToDo"))
         {
-            <div class="task-card" draggable="true" ondragstart="drag(event)" data-id="@task.Id">
-                <h5>@task.Title</h5>
+            <div class="task-card"
+                 draggable="true"
+                 ondragstart="drag(event)"
+                 data-id="@task.Id"
+                 data-status="@task.Status">
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5>@task.Title</h5>
+
+                    <input type="checkbox"
+                           onchange="markDone(this)"
+                    @(task.Status == "Done" ? "checked" : "") />
+                </div>
+
                 <p>@task.Description</p>
                 <p><strong>Due:</strong> @task.DueDate?.ToString("yyyy-MM-dd")</p>
 
-                <div>
-                    <a asp-action="Edit" asp-route-id="@task.Id">Edit</a>
-                    |
+                <div class="small">
+                    <a asp-action="Edit" asp-route-id="@task.Id">Edit</a> |
                     <a asp-action="Delete" asp-route-id="@task.Id">Delete</a>
                 </div>
             </div>
+
         }
     </div>
 
@@ -82,37 +128,61 @@
 
         @foreach (var task in Model.Where(t => t.Status == "InProgress"))
         {
-            <div class="task-card" draggable="true" ondragstart="drag(event)" data-id="@task.Id" style="border-left-color: orange;">
-                <h5>@task.Title</h5>
+            <div class="task-card"
+                 draggable="true"
+                 ondragstart="drag(event)"
+                 data-id="@task.Id"
+                 data-status="@task.Status">
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5>@task.Title</h5>
+
+                    <input type="checkbox"
+                           onchange="markDone(this)"
+                    @(task.Status == "Done" ? "checked" : "") />
+                </div>
+
                 <p>@task.Description</p>
                 <p><strong>Due:</strong> @task.DueDate?.ToString("yyyy-MM-dd")</p>
 
-                <div>
-                    <a asp-action="Edit" asp-route-id="@task.Id">Edit</a>
-                    |
+                <div class="small">
+                    <a asp-action="Edit" asp-route-id="@task.Id">Edit</a> |
                     <a asp-action="Delete" asp-route-id="@task.Id">Delete</a>
                 </div>
             </div>
+
         }
     </div>
 
   
-    <div class="board-column" ondragover="allowDrop(event)" ondrop="dropTask(event, 'Done')">
+    <div class="board-column" data-column="Done" ondragover="allowDrop(event)" ondrop="dropTask(event, 'Done')">
         <div class="column-title text-success">DONE</div>
 
         @foreach (var task in Model.Where(t => t.Status == "Done"))
         {
-            <div class="task-card" draggable="true" ondragstart="drag(event)" data-id="@task.Id" style="border-left-color: green;">
-                <h5>@task.Title</h5>
-                <p>@task.Description</p>
-                <p><strong>Done on:</strong> @task.DueDate?.ToString("yyyy-MM-dd")</p>
+            <div class="task-card"
+                 draggable="true"
+                 ondragstart="drag(event)"
+                 data-id="@task.Id"
+                 data-status="@task.Status">
 
-                <div>
-                    <a asp-action="Edit" asp-route-id="@task.Id">Edit</a>
-                    |
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5>@task.Title</h5>
+
+                    <input type="checkbox"
+                           onchange="markDone(this)"
+                    @(task.Status == "Done" ? "checked" : "") />
+                </div>
+
+                <p>@task.Description</p>
+                <p><strong>Due:</strong> @task.DueDate?.ToString("yyyy-MM-dd")</p>
+
+                <div class="small">
+                    <a asp-action="Edit" asp-route-id="@task.Id">Edit</a> |
                     <a asp-action="Delete" asp-route-id="@task.Id">Delete</a>
                 </div>
             </div>
+
         }
     </div>
 
@@ -123,7 +193,7 @@
         let draggedTask = null;
 
         function drag(event) {
-            draggedTask = event.target;
+            draggedTask = event.target.closest(".task-card");
             event.dataTransfer.setData("text", draggedTask.dataset.id);
             draggedTask.classList.add("dragging");
         }
@@ -140,20 +210,48 @@
 
             draggedTask.classList.remove("dragging");
 
-            
-            if (newStatus === "ToDo") draggedTask.style.borderLeftColor = "#007bff";
-            if (newStatus === "InProgress") draggedTask.style.borderLeftColor = "orange";
-            if (newStatus === "Done") draggedTask.style.borderLeftColor = "green";
+          
+            draggedTask.classList.remove("todo", "inprogress", "done");
 
             
-            fetch('/Tasks/UpdateStatus', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `id=${draggedTask.dataset.id}&status=${newStatus}`
-            });
+            if (newStatus === "ToDo") draggedTask.classList.add("todo");
+            if (newStatus === "InProgress") draggedTask.classList.add("inprogress");
+            if (newStatus === "Done") draggedTask.classList.add("done");
+
+            draggedTask.dataset.status = newStatus;
+
+           
         }
+
+        function markDone(checkbox) {
+            const card = checkbox.closest(".task-card");
+
+            if (checkbox.checked) {
+                card.classList.add("done");
+
+                const doneColumn = document.querySelector("[data-column='Done']");
+                doneColumn.appendChild(card);
+            } else {    
+                card.classList.remove("done");
+            }
+        }
+
+        function addBoard() {
+            const boardName = prompt("Enter board name:");
+            if (!boardName) return;
+
+            const board = document.createElement("div");
+            board.className = "board-column";
+            board.setAttribute("ondragover", "allowDrop(event)");
+
+            board.innerHTML = `
+                <div class="column-title">${boardName.toUpperCase()}</div>
+            `;
+
+            document.querySelector(".board-container").appendChild(board);
+        }
+
+
     </script>
 }
 
