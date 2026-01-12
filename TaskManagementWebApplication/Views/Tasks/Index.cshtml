@@ -72,6 +72,28 @@
             background: #e9f9ee;
         }
 
+        .priority {
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        color: white;
+        }
+
+        .priority.Low {
+            background: #6c757d;
+        }
+
+        .priority.Medium {
+            background: #ffc107;
+            color: black;
+        }
+
+        .priority.High {
+            background: #dc3545;
+        }
+
+
 </style>
 
 <h1 class="text-center text-white mt-2">My Task Board</h1>
@@ -80,19 +102,16 @@
     <a class="btn btn-dark" asp-action="Create">+ Create Task</a>
 </p>
 
-<div class="text-center mb-3">
-    <button class="btn btn-outline-dark" onclick="addBoard()">
-        + Add Another Board
-    </button>
-</div>
-
 
 
 <div class="board-container">
 
     
     <div class="board-column" ondragover="allowDrop(event)" ondrop="dropTask(event, 'ToDo')">
-        <div class="column-title text-primary">TO DO</div>
+        <div class="column-title text-primary">
+            TO DO (@Model.Count(t => t.Status == "ToDo"))
+        </div>
+
 
         @foreach (var task in Model.Where(t => t.Status == "ToDo"))
         {
@@ -104,6 +123,8 @@
 
                 <div class="d-flex justify-content-between align-items-center">
                     <h5>@task.Title</h5>
+                    <span class="priority @task.Priority">@task.Priority</span>
+
 
                     <input type="checkbox"
                            onchange="markDone(this)"
@@ -124,7 +145,10 @@
 
     
     <div class="board-column" ondragover="allowDrop(event)" ondrop="dropTask(event, 'InProgress')">
-        <div class="column-title text-warning">IN PROGRESS</div>
+        <div class="column-title text-warning">
+            IN PROGRESS (@Model.Count(t => t.Status == "InProgress"))
+        </div>
+
 
         @foreach (var task in Model.Where(t => t.Status == "InProgress"))
         {
@@ -136,6 +160,8 @@
 
                 <div class="d-flex justify-content-between align-items-center">
                     <h5>@task.Title</h5>
+                    <span class="priority @task.Priority">@task.Priority</span>
+
 
                     <input type="checkbox"
                            onchange="markDone(this)"
@@ -156,7 +182,10 @@
 
   
     <div class="board-column" data-column="Done" ondragover="allowDrop(event)" ondrop="dropTask(event, 'Done')">
-        <div class="column-title text-success">DONE</div>
+        <div class="column-title text-success">
+            DONE (@Model.Count(t => t.Status == "Done"))
+        </div>
+
 
         @foreach (var task in Model.Where(t => t.Status == "Done"))
         {
@@ -168,6 +197,8 @@
 
                 <div class="d-flex justify-content-between align-items-center">
                     <h5>@task.Title</h5>
+                    <span class="priority @task.Priority">@task.Priority</span>
+
 
                     <input type="checkbox"
                            onchange="markDone(this)"
@@ -235,22 +266,6 @@
                 card.classList.remove("done");
             }
         }
-
-        function addBoard() {
-            const boardName = prompt("Enter board name:");
-            if (!boardName) return;
-
-            const board = document.createElement("div");
-            board.className = "board-column";
-            board.setAttribute("ondragover", "allowDrop(event)");
-
-            board.innerHTML = `
-                <div class="column-title">${boardName.toUpperCase()}</div>
-            `;
-
-            document.querySelector(".board-container").appendChild(board);
-        }
-
 
     </script>
 }

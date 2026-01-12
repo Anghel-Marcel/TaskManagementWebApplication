@@ -25,6 +25,11 @@ namespace TaskManagementWebApplication.Models
         public string Status { get; set; } = "ToDo";
 
         [Required]
+        [StringLength(20)]
+        public string Priority { get; set; } = "Medium";
+
+
+        [Required]
         public string UserId { get; set; }
 
         [ForeignKey(nameof(UserId))]

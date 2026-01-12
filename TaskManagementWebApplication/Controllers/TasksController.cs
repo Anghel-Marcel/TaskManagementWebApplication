@@ -70,7 +70,7 @@ namespace TaskManagementWebApplication.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Description,DueDate,Status")] TaskItem taskItem)
+        public async Task<IActionResult> Create([Bind("Title,Description,DueDate,Status,Priority")] TaskItem taskItem)
         {
             ModelState.Remove("UserId"); 
 
@@ -132,6 +132,8 @@ namespace TaskManagementWebApplication.Controllers
                 taskItem.Description = model.Description;
                 taskItem.DueDate = model.DueDate;
                 taskItem.Status = model.Status;
+                taskItem.Priority = model.Priority;
+
 
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
