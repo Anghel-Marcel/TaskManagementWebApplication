@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TaskManagementWebApplication.Data;
 using TaskManagementWebApplication.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace TaskManagementWebApplication.Controllers
 {
@@ -15,17 +16,26 @@ namespace TaskManagementWebApplication.Controllers
     public class TasksController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public TasksController(ApplicationDbContext context)
+        public TasksController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Tasks
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Tasks.ToListAsync());
+            var userId = _userManager.GetUserId(User);
+
+            var tasks = await _context.Tasks
+                .Where(t => t.UserId == userId)
+                .ToListAsync();
+
+            return View(tasks);
         }
+
 
         // GET: Tasks/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -35,8 +45,11 @@ namespace TaskManagementWebApplication.Controllers
                 return NotFound();
             }
 
+            var userId = _userManager.GetUserId(User);
+
             var taskItem = await _context.Tasks
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
+
             if (taskItem == null)
             {
                 return NotFound();
@@ -44,6 +57,7 @@ namespace TaskManagementWebApplication.Controllers
 
             return View(taskItem);
         }
+
 
         // GET: Tasks/Create
         public IActionResult Create()
@@ -56,16 +70,22 @@ namespace TaskManagementWebApplication.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Description,DueDate,Status")] TaskItem taskItem)
+        public async Task<IActionResult> Create([Bind("Title,Description,DueDate,Status")] TaskItem taskItem)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(taskItem);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(taskItem);
+            ModelState.Remove("UserId"); 
+
+            if (!ModelState.IsValid)
+                return View(taskItem);
+
+            taskItem.UserId = _userManager.GetUserId(User);
+
+            _context.Tasks.Add(taskItem);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
+
+
+
 
         // GET: Tasks/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -75,48 +95,51 @@ namespace TaskManagementWebApplication.Controllers
                 return NotFound();
             }
 
-            var taskItem = await _context.Tasks.FindAsync(id);
+            var userId = _userManager.GetUserId(User);
+
+            var taskItem = await _context.Tasks
+                .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
+
             if (taskItem == null)
             {
                 return NotFound();
             }
+
             return View(taskItem);
         }
+
 
         // POST: Tasks/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,DueDate,Status")] TaskItem taskItem)
+        public async Task<IActionResult> Edit(int id, TaskItem model)
         {
-            if (id != taskItem.Id)
+            var userId = _userManager.GetUserId(User);
+
+            var taskItem = await _context.Tasks
+                .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
+
+            if (taskItem == null)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(taskItem);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TaskItemExists(taskItem.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                taskItem.Title = model.Title;
+                taskItem.Description = model.Description;
+                taskItem.DueDate = model.DueDate;
+                taskItem.Status = model.Status;
+
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(taskItem);
         }
+
 
         // GET: Tasks/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -126,8 +149,11 @@ namespace TaskManagementWebApplication.Controllers
                 return NotFound();
             }
 
+            var userId = _userManager.GetUserId(User);
+
             var taskItem = await _context.Tasks
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
+
             if (taskItem == null)
             {
                 return NotFound();
@@ -136,20 +162,28 @@ namespace TaskManagementWebApplication.Controllers
             return View(taskItem);
         }
 
+
         // POST: Tasks/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var taskItem = await _context.Tasks.FindAsync(id);
-            if (taskItem != null)
+            var userId = _userManager.GetUserId(User);
+
+            var taskItem = await _context.Tasks
+                .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
+
+            if (taskItem == null)
             {
-                _context.Tasks.Remove(taskItem);
+                return NotFound();
             }
 
+            _context.Tasks.Remove(taskItem);
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
+
 
         private bool TaskItemExists(int id)
         {
@@ -159,14 +193,22 @@ namespace TaskManagementWebApplication.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateStatus(int id, string status)
         {
-            var task = await _context.Tasks.FindAsync(id);
-            if (task == null) return NotFound();
+            var userId = _userManager.GetUserId(User);
+
+            var task = await _context.Tasks
+                .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
+
+            if (task == null)
+            {
+                return NotFound();
+            }
 
             task.Status = status;
             await _context.SaveChangesAsync();
 
             return Ok();
         }
+
 
     }
 }
