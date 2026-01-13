@@ -115,11 +115,12 @@
 
         @foreach (var task in Model.Where(t => t.Status == "ToDo"))
         {
-            <div class="task-card"
+            <div class="task-card @(task.Status == "ToDo" ? "todo" : task.Status == "InProgress" ? "inprogress" : "done")"
                  draggable="true"
                  ondragstart="drag(event)"
                  data-id="@task.Id"
                  data-status="@task.Status">
+
 
                 <div class="d-flex justify-content-between align-items-center">
                     <h5>@task.Title</h5>
@@ -152,11 +153,12 @@
 
         @foreach (var task in Model.Where(t => t.Status == "InProgress"))
         {
-            <div class="task-card"
+            <div class="task-card @(task.Status == "ToDo" ? "todo" : task.Status == "InProgress" ? "inprogress" : "done")"
                  draggable="true"
                  ondragstart="drag(event)"
                  data-id="@task.Id"
                  data-status="@task.Status">
+
 
                 <div class="d-flex justify-content-between align-items-center">
                     <h5>@task.Title</h5>
@@ -189,11 +191,12 @@
 
         @foreach (var task in Model.Where(t => t.Status == "Done"))
         {
-            <div class="task-card"
+            <div class="task-card @(task.Status == "ToDo" ? "todo" : task.Status == "InProgress" ? "inprogress" : "done")"
                  draggable="true"
                  ondragstart="drag(event)"
                  data-id="@task.Id"
                  data-status="@task.Status">
+
 
                 <div class="d-flex justify-content-between align-items-center">
                     <h5>@task.Title</h5>
@@ -218,6 +221,9 @@
     </div>
 
 </div>
+
+@Html.AntiForgeryToken()
+
 
 @section Scripts {
     <script>
@@ -251,6 +257,7 @@
 
             draggedTask.dataset.status = newStatus;
 
+            updateTaskStatus(draggedTask.dataset.id, newStatus);
            
         }
 
@@ -265,6 +272,22 @@
             } else {    
                 card.classList.remove("done");
             }
+            updateTaskStatus(card.dataset.id, newStatus);
+        }
+
+                function updateTaskStatus(taskId, status) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            fetch('/Tasks/UpdateStatus', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                },
+                body: JSON.stringify({ id: taskId, status: status })
+            }).then(res => {
+                if (!res.ok) console.error("Failed to update task status");
+            });
         }
 
     </script>
